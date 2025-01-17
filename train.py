@@ -22,10 +22,10 @@ def load_batched_npy(file_path):
     return np.concatenate(arrays)
 
 class DistanceMatrixDataset(Dataset):
-    def __init__(self, file_path):
-        # Load all matrices at once using our helper function
+    def __init__(self, file_path, max_samples=None):
         self.data = load_batched_npy(file_path)
-        # Scale down the distances (original values are in Angstroms)
+        if max_samples is not None:
+            self.data = self.data[:max_samples]
         self.data = self.data / 10.0
         
     def __len__(self):
@@ -58,12 +58,12 @@ def train_gan16(
     beta1=0.5,
     device='mps' if torch.backends.mps.is_available() else 'cpu'
 ):
-    dataset = DistanceMatrixDataset(train_path)
+    dataset = DistanceMatrixDataset(train_path, max_samples=50000)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     
     gan = GAN16(nz=nz).to(device)
-    optimizer_G = optim.Adam(gan.generator.parameters(), lr=lr, betas=(beta1, 0.999))
-    optimizer_D = optim.Adam(gan.discriminator.parameters(), lr=lr/10, betas=(beta1, 0.999))
+    optimizer_G = optim.Adam(gan.generator.parameters(), lr=0.0004, betas=(beta1, 0.999))
+    optimizer_D = optim.Adam(gan.discriminator.parameters(), lr=lr, betas=(beta1, 0.999))
     
     # loss function
     criterion = nn.BCELoss()
@@ -71,13 +71,13 @@ def train_gan16(
     # # Create batch of latent vectors that we will use to visualize generator progression
     # fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 
-    # LR schedulers
-    scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer_G, mode='min', factor=0.5, patience=5, verbose=True
-    )
-    scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer_D, mode='min', factor=0.5, patience=5, verbose=True
-    )
+    # # LR schedulers
+    # scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(
+    #     optimizer_G, mode='min', factor=0.5, patience=5, verbose=True
+    # )
+    # scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(
+    #     optimizer_D, mode='min', factor=0.5, patience=5, verbose=True
+    # )
 
     best_loss = float('inf')
     patience_counter = 0
@@ -98,8 +98,10 @@ def train_gan16(
             noise = torch.randn(batch_size, nz, 1, 1).to(device)
             fake_matrices = gan.generator(noise)
 
-            real_label = torch.ones(batch_size).to(device)
-            fake_label = torch.zeros(batch_size).to(device)
+            # real_label = torch.ones(batch_size).to(device)
+            # fake_label = torch.zeros(batch_size).to(device)
+            real_label = torch.ones(batch_size).to(device) * 0.3 + 0.7
+            fake_label = torch.zeros(batch_size).to(device) * 0.3
 
             # add noise
             noise_factor = 0.1 * (1 - epoch / num_epochs)
@@ -140,8 +142,8 @@ def train_gan16(
         d_losses.append(avg_d_loss)
 
         # update LR schedulers
-        scheduler_G.step(avg_g_loss)
-        scheduler_D.step(avg_d_loss)
+        # scheduler_G.step(avg_g_loss)
+        # scheduler_D.step(avg_d_loss)
 
         # early stopping
         current_loss = avg_g_loss + avg_d_loss
