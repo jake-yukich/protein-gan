@@ -67,7 +67,7 @@ class Generator16(nn.Module):
     def forward(self, x):
         x = self.main(x)
         x = torch.clamp(x, min=0)  # Enforce non-negativity
-        x = 0.5 * (x + x.flip(3))  # Enforce symmetry along the last dimension
+        x = 0.5 * (x + x.transpose(2, 3))  # Enforce symmetry along the last dimension
         return x
 
 class Discriminator16(nn.Module):
@@ -168,7 +168,7 @@ class Generator64(nn.Module):
     def forward(self, x):
         x = self.main(x)
         x = torch.clamp(x, min=0)
-        x = 0.5 * (x + x.flip(3))
+        x = 0.5 * (x + x.transpose(2, 3))
         return x
 
 class Discriminator64(nn.Module):
@@ -270,7 +270,7 @@ class Generator128(nn.Module):
     def forward(self, x):
         x = self.main(x)
         x = torch.clamp(x, min=0)
-        x = 0.5 * (x + x.flip(3))
+        x = 0.5 * (x + x.transpose(2, 3))
         return x
 
 class Discriminator128(nn.Module):
