@@ -4,5 +4,6 @@ pdb_files/
 .DS_Store
 datasets/
 checkpoints/
+models/__pycache__/
 
 r3gan_train.py
