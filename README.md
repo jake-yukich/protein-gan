@@ -1,6 +1,6 @@
 # Generative Modeling for Protein Structures
 
-Implementation of "Generative Modeling for Protein Structures" (NeurIPS 2018), the first research paper on generative AI for protein design. I've found this paper particularly interesting for its use of a convex optimization algorithm to recover structure predictions, the math behind which has been a lot of fun to explore. There was no publicly available code for the paper before this implementation, as far as I know.
+Implementation of "Generative Modeling for Protein Structures" (NeurIPS 2018), the first research paper on generative AI for protein design. 
 
 Replicating the following steps:
 1. Download PDB train and test data
@@ -70,7 +70,7 @@ This ensures that the distance from atom A to atom B is always equal to the dist
 
 ---
 
-![GAN16 Training Losses - Failed Run](training/gan_16_losses_fail.png)
+![GAN16 Training Losses - Failed Run](training/gan16_losses_fail.png)
 
 This loss pattern shows classic signs of GAN failure - the generator loss is increasing while the discriminator loss is decreasing. This is a sign that the discriminator is getting better at distinguishing between real and fake data, while the generator is not learning effectively.
 
